@@ -21,6 +21,13 @@ Generate image:
 ![](GAN_res/gen_40000.png)
 ![](GAN_res/gmm.gif)
 
+**VAE (just for Mnist)**:
+
+![](VAE/gen.gif)
+
+**VAE-GAN (For mnist)**:
+![](GAN_VAE/gen.gif)
+
 ## Requirements:
 
 Pytorch.

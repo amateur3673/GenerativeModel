@@ -4,7 +4,7 @@ Generate image:
 
 - Dataset: CelebA.
 
-**LS-GAN**: 
+**Least Square GAN (LSGAN)**: 
 ![](vis/ls_gan_celeba.png)
 
 **WGAN-GP**:

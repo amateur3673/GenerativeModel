@@ -16,6 +16,16 @@ Generate image:
 
 ![](vis/ls_ganG.png)
 
+**Loss Sensitive GAN (LS-GAN)**:
+
+- Using BN in the generator:
+
+![](LS-GAN/saved_imgs/celeba.png)
+
+- Not use BN in the generator:
+
+![](LS-GAN/saved_imgs/celeba_wobn.png)
+
 **LS-GAN**: Gaussian Mixture Datasets.
 
 ![](vis/gen_40000.png)

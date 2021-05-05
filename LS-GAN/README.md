@@ -9,3 +9,7 @@ Initial result:
 **CelebA**:
 
 ![](saved_imgs/celeba.png)
+
+**Without BN in Generator**:
+
+![](saved_imgs/celeba_wobn.png)

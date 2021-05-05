@@ -119,7 +119,6 @@ def train_model(dataloader,z_dim=100,base_dim=64,lrD=2e-4,lrG=2e-4,epochs = 51, 
     gen.to(device)
     disc.train()
     gen.train()
-    l1dist = nn.PairwiseDistance()
 
     fix_noise = torch.randn(100,z_dim,1,1).to(device)
 

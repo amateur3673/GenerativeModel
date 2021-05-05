@@ -42,17 +42,14 @@ class Discriminator(nn.Module):
         super(Discriminator,self).__init__()
         self.block1 = nn.Sequential(
             nn.Conv2d(1,latent_dim,kernel_size=5,stride=2,padding=2),
-            nn.BatchNorm2d(latent_dim),
             nn.LeakyReLU(0.2)
         )
         self.block2 = nn.Sequential(
             nn.Conv2d(latent_dim,latent_dim*2,kernel_size=5,stride=2,padding=2),
-            nn.BatchNorm2d(latent_dim*2),
             nn.ReLU(0.2)
         )
         self.block3 = nn.Sequential(
             nn.Conv2d(latent_dim*2,latent_dim*4,kernel_size=5,stride=2,padding=2),
-            nn.BatchNorm2d(latent_dim*4),
             nn.LeakyReLU(0.2)
         )
         self.linear = nn.Linear(latent_dim*4*4*4,1)
@@ -82,27 +79,22 @@ def init_weight(m):
         torch.nn.init.normal_(m.weight,0.,0.02)
         m.bias.data.fill_(0.)
 
-def compute_distance(real,fake):
-    real = real.view(real.shape[0],-1)
-    fake = fake.view(fake.shape[0],-1)
-    return torch.norm(real-fake,p=1,dim=1,keepdim=True)
+def compute_gradient_penalty(samples,model):
 
-def gradient_penalty(samples,model):
-    """Compute the gradient of discriminator respect to the input
-
-    Args:
-        samples: input samples
-        disc : discriminator
-    """
     samples.requires_grad = True
     outputs = model(samples)
     gradients = autograd.grad(outputs=outputs,inputs=samples,
-                             grad_outputs = torch.ones(outputs.size(),device=samples.device),retain_graph=True,create_graph=True,only_inputs=True)[0]
+                             grad_outputs=torch.ones(outputs.size(),device=samples.device),retain_graph=True,create_graph=True,only_inputs=True)[0]
     gradients = gradients.view(gradients.shape[0],-1)
-    gradients_penalty = torch.mean(torch.norm(gradients,p=2,dim=1))
-    return gradients_penalty
+    gradient_penalty = torch.mean(torch.norm(gradients,p=2,dim=1))
+    return gradient_penalty
 
-def train_model(gen,disc,dataloader,lambd=1000,lr=1e-3,epochs=25,device='cuda',gamma=5.):
+def compute_distance(X,Y,p=1):
+    '''
+    Compute the Lp distance between X and Y
+    '''
+    return torch.norm(X.view(X.shape[0],-1)-Y.view(Y.shape[0],-1),p=p,dim=1)
+def train_model(gen,disc,dataloader,lambd=2.5e-2,lr=1e-3,epochs=31,device='cuda',gamma=0.25):
     
     optim_gen = torch.optim.Adam(gen.parameters(),lr=lr,betas=(0.5,0.999))
     optim_disc = torch.optim.Adam(disc.parameters(),lr=lr,betas=(0.5,0.999))
@@ -120,8 +112,8 @@ def train_model(gen,disc,dataloader,lambd=1000,lr=1e-3,epochs=25,device='cuda',g
             fake_imgs = gen(z).detach()
             output_fake = disc(fake_imgs)
             delta = compute_distance(X,fake_imgs)
-            gradient = gradient_penalty(X,disc)
-            disc_loss = torch.mean(output_real)+lambd*torch.mean(F.relu(delta+output_real-output_fake))
+            gradient = compute_gradient_penalty(X,disc)
+            disc_loss = torch.mean(F.relu(lambd*delta+output_real-output_fake))+gamma*gradient
             disc_loss.backward()
             optim_disc.step()
             # Train the generator
